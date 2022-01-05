@@ -5,26 +5,28 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:google_sheet_db/model/ders_model.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 import 'package:google_sheet_db/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+  setUp(() {});
+  test('Name Box Create and Put', () async {
+    final List<DersModel> dersler = [];
+    var raw = await http
+        .get("https://script.google.com/macros/s/AKfycbxdfmOBc8UooJSD_iTdjhgR0ts5ux9JBhuRtHLdPml4uY21oLfy/exec");
+    if (raw.statusCode == 200) {
+      var jsonFeedback = convert.jsonDecode(raw.body);
+      //print('this is json Feedback ${jsonFeedback}');
+      for (var item in jsonFeedback) {
+        DersModel dersModel = DersModel();
+        dersModel.ders = item['ders'];
+        dersler.add(dersModel);
+      }
+    }
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(dersler, isNotNull);
   });
 }
